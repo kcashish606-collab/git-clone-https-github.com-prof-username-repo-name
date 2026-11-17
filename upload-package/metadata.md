@@ -76,7 +76,7 @@ Animation: [add credit]
 
 ---
 
-## 4. Tags (≈470 / 500 chars)
+## 4. Tags (≈400 / 500 chars)
 
 ```
 sleep deprivation, what happens if you dont sleep, stay awake for 11 days, randy gardner, 264 hours awake, no sleep for days, sleep deprivation effects, what happens to your body without sleep, longest time without sleep, microsleep, sleep facts, human body facts, brain facts, hallucinations from no sleep, all nighter, insomnia, why we need sleep, science explained, educational animation, what if
