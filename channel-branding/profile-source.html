@@ -1,0 +1,139 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:#000}
+  #c{width:800px;height:800px;position:relative;overflow:hidden;font-family:'Inter','Inter Display',sans-serif}
+  .t{position:absolute;font-weight:900;line-height:.9;letter-spacing:-2px;
+     color:#FFE14D;-webkit-text-stroke:14px #000;paint-order:stroke fill;text-transform:uppercase}
+  .w{color:#fff}
+  .pill{position:absolute;background:#E8202A;color:#fff;font-weight:900;border:6px solid #000;
+     border-radius:18px;padding:8px 26px;text-transform:uppercase;letter-spacing:-1px}
+</style></head>
+<body><div id="c"></div>
+<script>
+const V = new URLSearchParams(location.search).get('v') || 'A';
+const c = document.getElementById('c');
+
+// ---------- cartoon face (original art) ----------
+function eye(cx, cy, r, mood){
+  let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${mood==='happy'?'#fff':'#FFF4F0'}" stroke="#000" stroke-width="8"/>`;
+  if (mood !== 'happy'){
+    // blood vessels
+    const veins = [[-1,-.2],[-.9,.5],[1,.1],[.85,-.6],[-.4,.95],[.5,.9],[-.6,-.85]];
+    veins.forEach(([dx,dy],i)=>{
+      const x1=cx+dx*r*.95, y1=cy+dy*r*.95, mx=cx+dx*r*.6+(i%2?8:-8), my=cy+dy*r*.6, x2=cx+dx*r*.38, y2=cy+dy*r*.38;
+      s += `<path d="M${x1} ${y1} Q${mx} ${my} ${x2} ${y2}" stroke="#E0202A" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      s += `<path d="M${mx} ${my} l${dy*18} ${-dx*18}" stroke="#E0202A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    });
+  }
+  if (mood === 'spiral'){
+    let d = `M${cx} ${cy}`;
+    for (let a=0; a<6*Math.PI; a+=0.2){ const rr = a/(6*Math.PI)*r*.72; d += ` L${cx+Math.cos(a)*rr} ${cy+Math.sin(a)*rr}`; }
+    s += `<path d="${d}" stroke="#000" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+  } else if (mood === 'happy'){
+    s += `<circle cx="${cx+6}" cy="${cy+4}" r="${r*.42}" fill="#2B1B10"/><circle cx="${cx+16}" cy="${cy-8}" r="${r*.14}" fill="#fff"/>`;
+  } else {
+    // tiny shrunken pupil = shock
+    s += `<circle cx="${cx}" cy="${cy}" r="${r*.16}" fill="#111"/>`;
+  }
+  return s;
+}
+function face(mood, opts={}){
+  const skin = mood==='happy' ? '#FFD2A6' : '#F2C7A0';
+  let s = `<svg viewBox="0 0 600 640" width="${opts.w||600}" height="${(opts.w||600)*640/600}" xmlns="http://www.w3.org/2000/svg">`;
+  // neck + shirt
+  s += `<path d="M190 560 Q300 520 410 560 L470 640 L130 640 Z" fill="${mood==='happy'?'#3BA7FF':'#5B4E8C'}" stroke="#000" stroke-width="8"/>`;
+  s += `<rect x="255" y="470" width="90" height="90" fill="${skin}" stroke="#000" stroke-width="8"/>`;
+  // ears
+  s += `<ellipse cx="88" cy="320" rx="40" ry="58" fill="${skin}" stroke="#000" stroke-width="8"/><ellipse cx="512" cy="320" rx="40" ry="58" fill="${skin}" stroke="#000" stroke-width="8"/>`;
+  // head
+  s += `<ellipse cx="300" cy="300" rx="215" ry="235" fill="${skin}" stroke="#000" stroke-width="9"/>`;
+  // hair
+  if (mood==='happy'){
+    s += `<path d="M92 250 Q110 70 300 62 Q490 70 508 250 Q450 150 300 150 Q160 150 92 250Z" fill="#4A2C17" stroke="#000" stroke-width="8"/>`;
+  } else {
+    s += `<path d="M86 260 L70 170 L130 190 L120 90 L190 140 L210 40 L265 120 L310 20 L345 115 L410 45 L420 140 L495 95 L475 185 L535 175 L512 262 Q450 160 300 158 Q160 160 86 260Z" fill="#4A2C17" stroke="#000" stroke-width="8" stroke-linejoin="round"/>`;
+  }
+  // eye bags
+  if (mood!=='happy'){
+    s += `<path d="M110 360 Q200 440 285 360" stroke="#7A4E8C" stroke-width="14" fill="none" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M315 360 Q400 440 490 360" stroke="#7A4E8C" stroke-width="14" fill="none" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M125 392 Q200 450 270 392" stroke="#9B6AA8" stroke-width="8" fill="none" stroke-linecap="round" opacity=".6"/>`;
+    s += `<path d="M330 392 Q400 450 475 392" stroke="#9B6AA8" stroke-width="8" fill="none" stroke-linecap="round" opacity=".6"/>`;
+  }
+  // eyes
+  const er = mood==='happy' ? 58 : 92;
+  s += eye(198, 300, er, mood) + eye(402, 300, er, mood);
+  // brows
+  if (mood==='happy'){
+    s += `<path d="M150 215 Q198 190 246 215" stroke="#000" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M354 215 Q402 190 450 215" stroke="#000" stroke-width="12" fill="none" stroke-linecap="round"/>`;
+  } else {
+    s += `<path d="M110 190 L260 215" stroke="#000" stroke-width="13" stroke-linecap="round"/><path d="M490 190 L340 215" stroke="#000" stroke-width="13" stroke-linecap="round"/>`;
+  }
+  // mouth
+  if (mood==='happy'){
+    s += `<path d="M215 430 Q300 510 385 430 Z" fill="#7A1F1F" stroke="#000" stroke-width="8" stroke-linejoin="round"/><path d="M240 448 Q300 470 360 448" fill="#fff"/>`;
+  } else {
+    s += `<path d="M200 470 Q225 445 250 470 T300 470 T350 470 T400 470" stroke="#000" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M262 478 Q268 510 258 520" stroke="#6FC3FF" stroke-width="9" fill="none" stroke-linecap="round"/>`; // drool
+  }
+  // sweat drop
+  if (mood!=='happy') s += `<path d="M520 200 Q545 245 520 262 Q495 245 520 200Z" fill="#6FC3FF" stroke="#000" stroke-width="5"/>`;
+  s += `</svg>`;
+  return s;
+}
+function mug(x,y,sc=1){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px" width="${200*sc}" height="${230*sc}" viewBox="0 0 200 230">
+   <path d="M60 40 Q50 15 65 0 M100 40 Q90 15 105 0 M140 40 Q130 15 145 0" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/>
+   <path d="M150 90 Q195 95 190 135 Q185 175 145 170" stroke="#000" stroke-width="24" fill="none"/>
+   <path d="M150 90 Q195 95 190 135 Q185 175 145 170" stroke="#fff" stroke-width="10" fill="none"/>
+   <path d="M30 55 L170 55 L158 215 Q100 230 42 215 Z" fill="#fff" stroke="#000" stroke-width="9" stroke-linejoin="round"/>
+   <text x="100" y="160" text-anchor="middle" font-family="Inter" font-weight="900" font-size="58" fill="#E8202A">x12</text></svg>`;
+}
+function clock(x,y,size,label){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px" width="${size}" height="${size}" viewBox="0 0 200 200">
+   <circle cx="100" cy="100" r="88" fill="#fff" stroke="#000" stroke-width="12"/>
+   ${[...Array(12)].map((_,i)=>{const a=i*Math.PI/6;return `<line x1="${100+Math.cos(a)*70}" y1="${100+Math.sin(a)*70}" x2="${100+Math.cos(a)*80}" y2="${100+Math.sin(a)*80}" stroke="#000" stroke-width="6"/>`}).join('')}
+   <line x1="100" y1="100" x2="100" y2="38" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+   <line x1="100" y1="100" x2="148" y2="122" stroke="#E8202A" stroke-width="8" stroke-linecap="round"/>
+   <circle cx="100" cy="100" r="9" fill="#000"/></svg>`;
+}
+function arrow(x,y,rot,len=230){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:rotate(${rot}deg);transform-origin:0 50%" width="${len+40}" height="120" viewBox="0 0 ${len+40} 120">
+   <path d="M0 60 L${len-50} 60" stroke="#000" stroke-width="40" stroke-linecap="round"/>
+   <path d="M${len-80} 10 L${len+20} 60 L${len-80} 110 Z" fill="#000" stroke="#000" stroke-width="14" stroke-linejoin="round"/>
+   <path d="M0 60 L${len-50} 60" stroke="#E8202A" stroke-width="24" stroke-linecap="round"/>
+   <path d="M${len-70} 26 L${len} 60 L${len-70} 94 Z" fill="#E8202A"/></svg>`;
+}
+const stars = n => [...Array(n)].map(()=>`<div style="position:absolute;left:${Math.random()*1280}px;top:${Math.random()*720}px;width:4px;height:4px;border-radius:50%;background:#fff;opacity:${.3+Math.random()*.5}"></div>`).join('');
+
+
+const rays=(col1,col2,n=24)=>`<svg style="position:absolute;left:0;top:0" width="800" height="800" viewBox="0 0 800 800">${[...Array(n)].map((_,i)=>{const a1=i*2*Math.PI/n,a2=(i+.5)*2*Math.PI/n;return `<path d="M400 400 L${400+Math.cos(a1)*700} ${400+Math.sin(a1)*700} L${400+Math.cos(a2)*700} ${400+Math.sin(a2)*700}Z" fill="${i%2?col1:col2}"/>`}).join('')}</svg>`;
+const ring=`<div style="position:absolute;left:0;top:0;width:800px;height:800px;border-radius:50%;box-shadow:inset 0 0 0 26px #000"></div>`;
+let html='';
+if(V==='P1'){ // mascot on sunburst
+  c.style.background='#FFD23F'; html+=rays('#FFD23F','#FFBE1A');
+  html+=`<div style="position:absolute;left:115px;top:110px">${face('happy',{w:570})}</div>`;
+}
+if(V==='P2'){ // curious mascot + question mark
+  c.style.background='#22B8CF'; html+=rays('#22B8CF','#1AA3B8');
+  html+=`<div style="position:absolute;left:70px;top:150px">${face('happy',{w:540})}</div>`;
+  html+=`<div class="t" style="left:530px;top:90px;font-size:330px;transform:rotate(14deg)">?</div>`;
+}
+if(V==='P3'){ // lightbulb with eyes
+  c.style.background='#FF5A3C'; html+=rays('#FF5A3C','#F0432A');
+  html+=`<svg style="position:absolute;left:150px;top:90px" width="500" height="640" viewBox="0 0 500 640">
+   ${[...Array(7)].map((_,i)=>{const a=Math.PI*(1+i/6);return `<path d="M${250+Math.cos(a)*230} ${230+Math.sin(a)*230} L${250+Math.cos(a)*270} ${230+Math.sin(a)*270}" stroke="#000" stroke-width="30" stroke-linecap="round"/><path d="M${250+Math.cos(a)*230} ${230+Math.sin(a)*230} L${250+Math.cos(a)*270} ${230+Math.sin(a)*270}" stroke="#FFE14D" stroke-width="16" stroke-linecap="round"/>`}).join('')}
+   <path d="M250 40 C120 40 50 140 70 250 C85 330 160 370 170 450 L330 450 C340 370 415 330 430 250 C450 140 380 40 250 40Z" fill="#FFF3A6" stroke="#000" stroke-width="16"/>
+   <rect x="170" y="450" width="160" height="40" rx="10" fill="#B9C4D0" stroke="#000" stroke-width="12"/>
+   <rect x="180" y="490" width="140" height="40" rx="10" fill="#9AA6B4" stroke="#000" stroke-width="12"/>
+   <path d="M205 530 L295 530 L270 570 L230 570Z" fill="#555" stroke="#000" stroke-width="12" stroke-linejoin="round"/>
+   <circle cx="185" cy="230" r="52" fill="#fff" stroke="#000" stroke-width="12"/><circle cx="315" cy="230" r="52" fill="#fff" stroke="#000" stroke-width="12"/>
+   <circle cx="192" cy="236" r="24" fill="#2B1B10"/><circle cx="322" cy="236" r="24" fill="#2B1B10"/>
+   <circle cx="200" cy="226" r="8" fill="#fff"/><circle cx="330" cy="226" r="8" fill="#fff"/>
+   <path d="M195 330 Q250 385 305 330" stroke="#000" stroke-width="14" fill="none" stroke-linecap="round"/>
+   <path d="M110 150 Q130 95 180 80" stroke="#fff" stroke-width="18" fill="none" stroke-linecap="round" opacity=".8"/></svg>`;
+}
+html+=ring;
+c.innerHTML=html;
+</script></body></html>
