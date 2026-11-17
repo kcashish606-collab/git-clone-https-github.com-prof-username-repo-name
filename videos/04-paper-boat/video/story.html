@@ -1,0 +1,248 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;background:#000}
+#c{width:1920px;height:1080px;position:relative;overflow:hidden;font-family:'Inter',sans-serif}
+.abs{position:absolute}
+.cap{position:absolute;left:180px;right:180px;bottom:70px;text-align:center;font:800 50px/1.25 Inter;color:#fff;-webkit-text-stroke:10px rgba(0,0,0,.85);paint-order:stroke fill}
+.t{position:absolute;font-weight:900;line-height:.95;color:#FFE14D;-webkit-text-stroke:18px #000;paint-order:stroke fill;text-transform:uppercase;letter-spacing:-2px}
+.hand{font-family:'FreeSerif',serif;font-style:italic;color:#2B3A67}
+</style></head><body><div id="c"></div>
+<script>
+// ======== helpers ========
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=x=>{x=clamp(x);return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2};
+const lerp=(a,b,k)=>a+(b-a)*k;
+function rnd(i){const x=Math.sin(i*127.1)*43758.5453;return x-Math.floor(x)}
+
+// ======== characters (original designs) ========
+function girl({mood='smile',w=300,look=0,arm='down'}={}){
+  const skin='#A86B45',eyeX=look*8;
+  let mouth={smile:'<path d="M118 190 Q150 222 182 190" stroke="#3B1D10" stroke-width="8" fill="none" stroke-linecap="round"/>',
+    flat:'<path d="M125 198 L175 198" stroke="#3B1D10" stroke-width="8" stroke-linecap="round"/>',
+    sad:'<path d="M122 205 Q150 185 178 205" stroke="#3B1D10" stroke-width="8" fill="none" stroke-linecap="round"/>',
+    wow:'<ellipse cx="150" cy="200" rx="16" ry="20" fill="#5A1E1E" stroke="#3B1D10" stroke-width="6"/>',
+    focus:'<path d="M128 196 Q150 204 172 196" stroke="#3B1D10" stroke-width="7" fill="none"/><path d="M160 199 Q170 218 180 204" fill="#E86A7A" stroke="#3B1D10" stroke-width="4"/>',
+    big:'<path d="M112 186 Q150 238 188 186 Z" fill="#5A1E1E" stroke="#3B1D10" stroke-width="7" stroke-linejoin="round"/>'}[mood];
+  const arms=arm==='up'?'<path d="M70 270 L30 170 M230 270 L270 170" stroke="#F7C53B" stroke-width="34" stroke-linecap="round"/><circle cx="30" cy="165" r="20" fill="'+skin+'"/><circle cx="270" cy="165" r="20" fill="'+skin+'"/>'
+    :arm==='front'?'<path d="M75 280 Q110 330 150 330 M225 280 Q190 330 150 330" stroke="#F7C53B" stroke-width="32" fill="none" stroke-linecap="round"/>'
+    :'<path d="M72 270 L50 380 M228 270 L250 380" stroke="#F7C53B" stroke-width="34" stroke-linecap="round"/><circle cx="48" cy="392" r="20" fill="'+skin+'"/><circle cx="252" cy="392" r="20" fill="'+skin+'"/>';
+  return `<svg width="${w}" height="${w*1.6}" viewBox="0 0 300 480">
+   <rect x="100" y="420" width="38" height="50" fill="#D2463A" stroke="#000" stroke-width="6"/><rect x="162" y="420" width="38" height="50" fill="#D2463A" stroke="#000" stroke-width="6"/>
+   <path d="M70 250 L230 250 L260 430 L40 430 Z" fill="#F7C53B" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+   <circle cx="150" cy="300" r="7" fill="#000"/><circle cx="150" cy="345" r="7" fill="#000"/><circle cx="150" cy="390" r="7" fill="#000"/>
+   ${arms}
+   <circle cx="88" cy="58" r="44" fill="#2B1B10" stroke="#000" stroke-width="6"/><circle cx="212" cy="58" r="44" fill="#2B1B10" stroke="#000" stroke-width="6"/>
+   <circle cx="150" cy="150" r="98" fill="${skin}" stroke="#000" stroke-width="8"/>
+   <path d="M56 130 Q70 50 150 48 Q230 50 244 130 Q200 90 150 92 Q100 90 56 130Z" fill="#2B1B10"/>
+   <ellipse cx="112" cy="150" rx="20" ry="24" fill="#fff" stroke="#000" stroke-width="5"/><ellipse cx="188" cy="150" rx="20" ry="24" fill="#fff" stroke="#000" stroke-width="5"/>
+   <circle cx="${114+eyeX}" cy="154" r="11" fill="#2B1B10"/><circle cx="${190+eyeX}" cy="154" r="11" fill="#2B1B10"/>
+   <circle cx="${118+eyeX}" cy="148" r="4" fill="#fff"/><circle cx="${194+eyeX}" cy="148" r="4" fill="#fff"/>
+   <ellipse cx="88" cy="190" rx="16" ry="9" fill="#E07A6A" opacity=".55"/><ellipse cx="212" cy="190" rx="16" ry="9" fill="#E07A6A" opacity=".55"/>
+   ${mouth}</svg>`;
+}
+function grandpa({mood='blank',w=340}={}){
+  const skin='#C98F65';
+  const eyes=mood==='smile'?'<path d="M112 162 Q130 148 148 162 M192 162 Q210 148 228 162" stroke="#2B1B10" stroke-width="7" fill="none" stroke-linecap="round"/>'
+    :'<circle cx="130" cy="162" r="8" fill="#2B1B10"/><circle cx="210" cy="162" r="8" fill="#2B1B10"/>';
+  const mouth=mood==='smile'?'<path d="M132 236 Q170 266 208 236" stroke="#3B1D10" stroke-width="8" fill="none" stroke-linecap="round"/>'
+    :mood==='sad'?'<path d="M140 248 Q170 232 200 248" stroke="#3B1D10" stroke-width="7" fill="none" stroke-linecap="round"/>'
+    :'<path d="M145 242 L195 242" stroke="#3B1D10" stroke-width="7" stroke-linecap="round"/>';
+  const brows=mood==='blank'?'<path d="M104 128 Q130 120 154 130 M186 130 Q210 120 236 128" stroke="#EEE" stroke-width="12" fill="none" stroke-linecap="round"/>'
+    :'<path d="M104 122 Q130 108 154 120 M186 120 Q210 108 236 122" stroke="#EEE" stroke-width="12" fill="none" stroke-linecap="round"/>';
+  return `<svg width="${w}" height="${w*1.53}" viewBox="0 0 340 520">
+   <path d="M40 300 Q170 250 300 300 L320 520 L20 520 Z" fill="#4E7D5B" stroke="#000" stroke-width="8"/>
+   <path d="M130 282 L170 360 L210 282 Z" fill="#F5F0E6" stroke="#000" stroke-width="6"/>
+   <circle cx="170" cy="400" r="8" fill="#2E4A36"/><circle cx="170" cy="450" r="8" fill="#2E4A36"/>
+   <ellipse cx="62" cy="175" rx="26" ry="38" fill="${skin}" stroke="#000" stroke-width="7"/><ellipse cx="278" cy="175" rx="26" ry="38" fill="${skin}" stroke="#000" stroke-width="7"/>
+   <ellipse cx="170" cy="160" rx="112" ry="125" fill="${skin}" stroke="#000" stroke-width="8"/>
+   <path d="M62 150 Q55 80 95 70 Q80 120 100 150 Z M278 150 Q285 80 245 70 Q260 120 240 150 Z" fill="#F2F2F2" stroke="#000" stroke-width="6"/>
+   <ellipse cx="140" cy="70" rx="40" ry="16" fill="#fff" opacity=".35"/>
+   ${brows}${eyes}
+   <circle cx="130" cy="162" r="32" fill="none" stroke="#3A2A1E" stroke-width="7"/><circle cx="210" cy="162" r="32" fill="none" stroke="#3A2A1E" stroke-width="7"/><path d="M162 160 L178 160" stroke="#3A2A1E" stroke-width="6"/>
+   <path d="M160 190 Q170 215 182 196" fill="${skin}" stroke="#000" stroke-width="5"/>
+   <path d="M118 222 Q145 200 170 214 Q195 200 222 222 Q200 238 170 228 Q140 238 118 222Z" fill="#F2F2F2" stroke="#000" stroke-width="6"/>
+   ${mouth}</svg>`;
+}
+// paper: k=0 square, k=1 boat
+function paper(k,w=200,rot=0,col='#FFFFFF'){
+  const sq=[[10,10],[50,10],[90,10],[90,90],[50,90],[10,90],[10,50]];
+  const bt=[[5,52],[50,6],[95,52],[95,52],[78,92],[22,92],[5,52]];
+  k=ease(k);const pts=sq.map((p,i)=>[lerp(p[0],bt[i][0],k),lerp(p[1],bt[i][1],k)]);
+  const lines=k>.6?`<path d="M5 52 L95 52 M50 6 L50 52" stroke="#9AA5B1" stroke-width="2" opacity="${(k-.6)*2.5}"/>`:`<path d="M10 10 L90 90 M90 10 L10 90" stroke="#C5CCD4" stroke-width="1.5" opacity="${1-k*1.6}"/>`;
+  return `<svg width="${w}" height="${w}" viewBox="0 0 100 100" style="transform:rotate(${rot}deg);overflow:visible"><polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="${col}" stroke="#000" stroke-width="3" stroke-linejoin="round"/>${lines}</svg>`;
+}
+function hat(w){return `<svg width="${w}" height="${w*.6}" viewBox="0 0 100 60"><path d="M5 55 L50 5 L95 55 Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/><path d="M0 55 L100 55" stroke="#000" stroke-width="5"/></svg>`}
+function frog(w){return `<svg width="${w}" height="${w*.7}" viewBox="0 0 100 70"><path d="M10 65 L25 25 L45 40 L55 40 L75 25 L90 65 Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/><circle cx="28" cy="22" r="7" fill="#fff" stroke="#000" stroke-width="3"/><circle cx="72" cy="22" r="7" fill="#fff" stroke="#000" stroke-width="3"/></svg>`}
+function ball(w){return `<svg width="${w}" height="${w}" viewBox="0 0 100 100"><path d="M50 8 L70 15 L90 35 L88 62 L72 88 L45 92 L20 80 L10 55 L15 28 L30 12Z" fill="#fff" stroke="#000" stroke-width="3" stroke-linejoin="round"/><path d="M30 30 L55 45 L40 70 M60 20 L70 55 L50 80 M20 55 L45 50" stroke="#B8C0C8" stroke-width="2" fill="none"/></svg>`}
+function rain(t,n=90,inten=1,col='rgba(200,220,255,.55)'){
+  return `<svg class="abs" style="left:0;top:0" width="1920" height="1080">${[...Array(Math.round(n*inten))].map((_,i)=>{const x=rnd(i)*1960,sp=900+rnd(i+9)*600,y=((t*sp+rnd(i+3)*1080)%1180)-100;return `<path d="M${x} ${y} l-12 42" stroke="${col}" stroke-width="3" stroke-linecap="round"/>`}).join('')}</svg>`;
+}
+function kitchen(t,inten=1){
+  return `<div class="abs" style="inset:0;background:#EBD9B8"></div>
+  <div class="abs" style="left:0;right:0;top:0;height:120px;background:#DCC69E"></div>
+  <div class="abs" style="left:620px;top:150px;width:680px;height:470px;border:24px solid #8A5A3B;outline:6px solid #000;background:linear-gradient(#7F95AA,#AFC0CF);overflow:hidden">
+     <div class="abs" style="left:0;right:0;bottom:0;height:120px;background:#5D7085"></div>
+     <div class="abs" style="left:315px;top:0;width:14px;height:100%;background:#8A5A3B"></div>
+     <div class="abs" style="left:0;top:200px;width:100%;height:14px;background:#8A5A3B"></div>
+     <div class="abs" style="left:-620px;top:-150px">${rain(t,60,inten,'rgba(255,255,255,.75)')}</div></div>
+  <div class="abs" style="left:-40px;right:-40px;top:780px;height:340px;background:#9C6B45;border-top:10px solid #000"></div>
+  <div class="abs" style="left:-40px;right:-40px;top:780px;height:40px;background:#B07C52"></div>`;
+}
+function street(t,inten=.6,sun=0){
+  const houses=[...Array(6)].map((_,i)=>`<div class="abs" style="left:${i*340-40}px;top:${260+rnd(i)*60}px;width:300px;height:400px;background:hsl(${190+i*25},18%,${42+rnd(i+4)*12}%);border:6px solid #000"><div style="margin:60px auto 0;width:80px;height:90px;background:#F6D77A;border:5px solid #000"></div></div>`).join('');
+  const ripples=[...Array(14)].map((_,i)=>{const x=((t*160+i*150)%2100)-100;return `<path d="M${x} ${860+(i%3)*30} q30 -12 60 0" stroke="#D6ECFF" stroke-width="5" fill="none" opacity=".8"/>`}).join('');
+  return `<div class="abs" style="inset:0;background:linear-gradient(${sun?'#9FC7E8':'#8193A6'},${sun?'#F7E2B5':'#B9C6D2'})"></div>
+  ${sun?`<div class="abs" style="left:1450px;top:${120-sun*40}px;width:220px;height:220px;border-radius:50%;background:#FFE58A;opacity:${sun};box-shadow:0 0 120px 60px rgba(255,229,138,.6)"></div>`:''}
+  ${houses}
+  <div class="abs" style="left:0;right:0;top:640px;height:160px;background:#A9A49B;border-top:8px solid #000"></div>
+  <div class="abs" style="left:0;right:0;top:790px;height:30px;background:#7D786F;border-top:6px solid #000"></div>
+  <div class="abs" style="left:0;right:0;top:820px;height:260px;background:#4E555E"></div>
+  <div class="abs" style="left:0;right:0;top:830px;height:110px;background:#5B8FC2;opacity:.85"></div>
+  <svg class="abs" style="left:0;top:0" width="1920" height="1080">${ripples}</svg>
+  ${inten>0?rain(t,70,inten):''}`;
+}
+function boatAt(x,y,w,t,rot=0){return `<div class="abs" style="left:${x}px;top:${y+Math.sin(t*3+x)*6}px;transform:rotate(${rot+Math.sin(t*2.3+x)*5}deg)">${paper(1,w)}</div>`}
+function note(text,w=900,k=1){return `<div class="abs" style="left:${960-w/2}px;top:300px;width:${w}px;padding:60px 50px;background:#FBF4E2;border:8px solid #000;box-shadow:12px 12px 0 rgba(0,0,0,.3);transform:rotate(-2deg) scale(${lerp(.6,1,ease(k))});opacity:${clamp(k*2)}">
+  <svg class="abs" style="left:0;top:0" width="${w}" height="400"><path d="M0 0 L${w} 400 M${w} 0 L0 400 M${w/2} 0 L${w/2} 400 M0 200 L${w} 200" stroke="#D9CDB0" stroke-width="3"/></svg>
+  <div class="hand" style="position:relative;font-size:64px;text-align:center;line-height:1.3">${text}</div></div>`}
+const sepia='filter:sepia(.55) saturate(1.25) brightness(1.04)';
+function vignette(){return `<div class="abs" style="inset:0;box-shadow:inset 0 0 260px 80px rgba(60,30,0,.55)"></div>`}
+
+// ======== scenes ========
+// each: a,b (seconds), lines (narration for captions, timed inside [a+lead, b-tail]), draw(u,t)
+const SC=[
+ {a:0,b:22,lines:['Every time it rained, Grandpa made a paper boat.','He had done it for sixty years.','But this morning, he sat at the table, holding the paper…','and he couldn\'t remember how.'],lead:1.5,draw:(u,t)=>`
+   <div class="abs" style="inset:0;transform:scale(${1+u*0.006});transform-origin:60% 55%">${kitchen(t,1)}
+   <div class="abs" style="left:760px;top:330px">${grandpa({mood:'blank',w:400})}</div>
+   <div class="abs" style="left:870px;top:760px;transform:rotate(${Math.sin(t*.7)*2}deg)">${paper(0,170)}</div></div>`},
+ {a:22,b:34,lines:['When Mira was little, rainy days were the best days.','Grandpa would fold a boat in eleven quick moves:','fold, fold, flip, pull. Then a boat appeared, like magic.'],lead:.8,draw:(u,t)=>`
+   <div class="abs" style="inset:0;${sepia}">${kitchen(t,1)}
+   <div class="abs" style="left:520px;top:330px">${grandpa({mood:'smile',w:400})}</div>
+   <div class="abs" style="left:1150px;top:470px">${girl({mood:u>7?'big':'wow',w:250,look:-1})}</div>
+   <div class="abs" style="left:640px;top:${720-ease((u-7)/2)*40}px">${paper(clamp((u-1)/7),190,Math.sin(u*6)*(u<8?12:0))}</div></div>${vignette()}`},
+ {a:34,b:50,lines:['They raced them down the stream along the street,','shouting and splashing.'],lead:.6,draw:(u,t)=>`
+   <div class="abs" style="inset:0;${sepia}">${street(t,.8)}
+   ${boatAt(-150+u*130,770,150,t,-4)}${boatAt(-300+u*125,800,130,t,3)}
+   <div class="abs" style="left:${200+u*30}px;top:300px">${grandpa({mood:'smile',w:330})}</div>
+   <div class="abs" style="left:${560+u*34}px;top:${380-Math.abs(Math.sin(u*5))*40}px">${girl({mood:'big',w:230,arm:'up'})}</div></div>${vignette()}`},
+ {a:50,b:62,lines:['And Grandpa had one rule.','"Before a boat sails," he said, "you write a wish inside.','The rain carries it away."'],lead:.5,draw:(u,t)=>`
+   <div class="abs" style="inset:0;${sepia}">${kitchen(t,1)}
+   <div class="abs" style="left:620px;top:330px">${grandpa({mood:'smile',w:400})}</div>
+   <div class="abs" style="left:1150px;top:470px">${girl({mood:'smile',w:250,look:-1})}</div>
+   <div class="abs" style="left:720px;top:700px;width:150px;height:110px;background:#FBF4E2;border:5px solid #000;transform:rotate(-6deg)"><svg width="150" height="110"><path d="M20 35 q15 -10 30 0 t30 0 t30 0 M20 65 q15 -10 30 0 t30 0" stroke="#2B3A67" stroke-width="5" fill="none" stroke-dasharray="${Math.min(400,u*120)} 400"/></svg></div>
+   <div class="abs" style="left:${790+Math.sin(u*8)*20}px;top:640px;width:16px;height:120px;background:#F2B233;border:4px solid #000;transform:rotate(25deg)"></div></div>${vignette()}`},
+ {a:62,b:74,lines:['But lately, Grandpa had been forgetting things.','Small things at first: his keys turned up in the fridge.'],lead:.8,draw:(u,t)=>{const op=ease((u-1)/1.5);return `
+   <div class="abs" style="inset:0;background:#E3E8EC"></div><div class="abs" style="left:0;right:0;top:820px;height:260px;background:#B9A88E;border-top:8px solid #000"></div>
+   <div class="abs" style="left:560px;top:120px;width:520px;height:760px;background:#F4F7FA;border:10px solid #000;border-radius:20px">
+     <div class="abs" style="left:30px;top:120px;width:440px;height:560px;background:#DDF1FF;border:6px solid #000"></div>
+     <div class="abs" style="left:60px;top:500px;width:120px;height:160px;background:#fff;border:6px solid #000;border-radius:10px"><div style="margin:30px 10px;font:900 30px Inter;text-align:center">MILK</div></div>
+     <svg class="abs" style="left:250px;top:${560-op*30}px;opacity:${clamp(u-1)}" width="140" height="90"><circle cx="35" cy="45" r="28" fill="none" stroke="#C99A2E" stroke-width="12"/><path d="M60 45 L130 45 M110 45 L110 70 M125 45 L125 65" stroke="#C99A2E" stroke-width="12" stroke-linecap="round"/></svg>
+     <div class="abs" style="left:-10px;top:-10px;width:520px;height:760px;background:#F4F7FA;border:10px solid #000;border-radius:20px;transform-origin:0 50%;transform:perspective(1600px) rotateY(${-op*100}deg)"></div></div>
+   <div class="abs" style="left:${1150-op*60}px;top:340px">${grandpa({mood:'blank',w:400})}</div>
+   ${u>6?`<div class="abs" style="left:150px;top:420px">${girl({mood:'flat',w:260,look:1})}</div>`:''}`}},
+ {a:74,b:100,lines:['Then bigger things. Sometimes he called Mira by her mother\'s name.','"Grandpa\'s memory is getting tired," Mom said softly.','"Some days will be harder than others."','Mira looked at the rain. Then at the paper in Grandpa\'s hands.','If Grandpa couldn\'t remember how to make the boat,','she would learn it… and teach him back.'],lead:.8,draw:(u,t)=>`
+   ${kitchen(t,1)}
+   <div class="abs" style="left:1050px;top:330px">${grandpa({mood:u<10?'blank':'sad',w:400})}</div>
+   <div class="abs" style="left:1150px;top:760px">${paper(0,150)}</div>
+   <div class="abs" style="left:${300}px;top:${450-ease((u-20)/2)*20}px">${girl({mood:u<20?'sad':'focus',w:290,look:u>14&&u<18?1:(u>18?1:-1)})}</div>`},
+ {a:100,b:118,lines:['Her first boat looked like a hat.','Her second looked like a frog.'],lead:1,draw:(u,t)=>`
+   ${kitchen(t,.8)}
+   <div class="abs" style="left:780px;top:380px">${girl({mood:u<6?'focus':(u<10?'smile':'flat'),w:330})}</div>
+   ${u>2.5?`<div class="abs" style="left:${u<6?880:885}px;top:${u<6?760:330-ease((u-6)/.6)*0}px;transform:scale(${u<6?1:1.4})">${hat(u<6?140:150)}</div>`:''}
+   ${u>10?`<div class="abs" style="left:${840+Math.min(1,(u-10))*40}px;top:${740}px;transform:rotate(${u>13?160:0}deg);transition:none">${frog(170)}</div>`:''}`},
+ {a:118,b:140,lines:['Her third… was just a ball.','She tried one in the sink. It sank in two seconds.'],lead:.8,draw:(u,t)=>{
+   if(u<9){const bt=clamp((u-2)/1.5);return `${kitchen(t,.7)}
+     <div class="abs" style="left:780px;top:380px">${girl({mood:u>3.4?'sad':'focus',w:330})}</div>
+     <div class="abs" style="left:${900}px;top:${lerp(760,370,Math.sin(bt*Math.PI))+(u>3.5?lerp(0,420,clamp((u-3.5)/1)):0)}px">${ball(110)}</div>`}
+   const s=u-9;return `<div class="abs" style="inset:0;background:#DDE6EA"></div>
+     <div class="abs" style="left:460px;top:520px;width:1000px;height:420px;background:#C8D2D8;border:10px solid #000;border-radius:0 0 60px 60px"></div>
+     <div class="abs" style="left:500px;top:560px;width:920px;height:330px;background:#7FB8E0;border:6px solid #000;border-radius:0 0 40px 40px;overflow:hidden">
+       <div class="abs" style="left:380px;top:${lerp(-30,250,ease((s-3)/2))}px;transform:rotate(${s>3?lerp(0,35,clamp((s-3)/2)):0}deg)">${paper(1,170)}</div>
+       ${s>4?[0,1,2,3].map(i=>`<div class="abs" style="left:${440+i*30}px;top:${(200-((s-4)*90+i*40)%220)}px;width:22px;height:22px;border-radius:50%;border:4px solid #fff"></div>`).join(''):''}</div>
+     <div class="abs" style="left:880px;top:300px;width:60px;height:240px;background:#B9C3CA;border:8px solid #000;border-radius:30px 30px 0 0"></div>
+     <div class="abs" style="left:1450px;top:200px">${girl({mood:s>5?'sad':'flat',w:260,look:-1})}</div>`}},
+ {a:140,b:160,lines:['And outside, the rain was getting lighter.','Soon, it would stop.','And the stream along the street would be gone.'],lead:1,draw:(u,t)=>`
+   ${kitchen(t,lerp(1,.25,u/20))}
+   <div class="abs" style="left:300px;top:450px">${girl({mood:'sad',w:280,look:1})}</div>
+   <div class="abs" style="left:1350px;top:180px;width:220px;height:220px;border-radius:50%;background:#fff;border:12px solid #000">
+     <div class="abs" style="left:100px;top:30px;width:10px;height:80px;background:#000;transform-origin:5px 80px;transform:rotate(${u*40}deg)"></div>
+     <div class="abs" style="left:98px;top:98px;width:14px;height:14px;border-radius:50%;background:#E8202A"></div></div>`},
+ {a:160,b:182,lines:['On Grandpa\'s shelf, behind the books, Mira found an old blue tin box.','Inside were paper boats. Dozens of them.','Every boat Grandpa had ever kept.'],lead:.8,draw:(u,t)=>{const open=ease((u-9)/1.5);
+   const books=[...Array(14)].map((_,i)=>`<div class="abs" style="left:${360+i*86}px;top:${300+(i%3)*10}px;width:70px;height:${230-(i%3)*10}px;background:hsl(${i*37},45%,48%);border:5px solid #000;transform:translateX(${i>5&&i<9?ease((u-2)/2)*(i<7?-90:90):0}px)"></div>`).join('');
+   return `<div class="abs" style="inset:0;background:#E6D3B3"></div>
+   <div class="abs" style="left:320px;top:540px;width:1280px;height:34px;background:#8A5A3B;border:6px solid #000"></div>
+   <div class="abs" style="left:870px;top:${u<6?420:lerp(420,620,ease((u-6)/2))}px;width:200px;height:120px;background:#3E6FB0;border:8px solid #000;border-radius:14px;transform:scale(${u<6?1:lerp(1,2.2,ease((u-6)/2))})">
+     <div class="abs" style="left:-8px;top:${-30-open*90}px;width:200px;height:40px;background:#4F86CC;border:8px solid #000;border-radius:10px;transform:rotate(${-open*25}deg)"></div>
+     ${open>0?[...Array(6)].map((_,i)=>`<div class="abs" style="left:${10+i*30}px;top:${-10-(i%2)*14}px;opacity:${open}">${paper(1,50,(i-3)*8,'#F5EBCF')}</div>`).join(''):''}
+     ${open>0?`<div class="abs" style="left:-60px;top:-110px;width:320px;height:200px;background:radial-gradient(rgba(255,230,150,${open*.6}),transparent 70%)"></div>`:''}</div>
+   ${books}
+   <div class="abs" style="left:${u<6?120:110}px;top:330px">${girl({mood:u<9?'focus':'wow',w:320,look:1})}</div>`}},
+ {a:182,b:200,lines:['Mira had an idea. Very, very carefully, she unfolded one…','one fold at a time.','And the creases in the paper showed her every step.'],lead:.6,draw:(u,t)=>`
+   <div class="abs" style="inset:0;background:#9C6B45"></div><div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,235,180,.55),transparent 60%)"></div>
+   <div class="abs" style="left:${960-200}px;top:${300}px">${paper(1-clamp((u-1)/10),400,0,'#F5EBCF')}</div>
+   ${u>11?`<svg class="abs" style="left:760px;top:300px" width="400" height="400" viewBox="0 0 100 100"><path d="M10 10 L90 90 M90 10 L10 90 M50 10 L50 90 M10 50 L90 50" stroke="#B08A5A" stroke-width="1.2" stroke-dasharray="3 2" opacity="${clamp((u-11)/2)}"/></svg>`:''}
+   <div class="abs" style="left:520px;top:720px;width:200px;height:110px;background:#A86B45;border:7px solid #000;border-radius:60px;transform:rotate(${20+Math.sin(u*2)*6}deg)"></div>
+   <div class="abs" style="left:1200px;top:720px;width:200px;height:110px;background:#A86B45;border:7px solid #000;border-radius:60px;transform:rotate(${-20-Math.sin(u*2)*6}deg)"></div>`},
+ {a:200,b:214,lines:['In the middle of the paper, there was a wish,','written in Grandpa\'s handwriting.','Mira read it twice.'],lead:.6,draw:(u,t)=>`
+   <div class="abs" style="inset:0;background:#7A5236"></div><div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,235,180,.6),transparent 65%)"></div>
+   ${note('I wish Mira always has<br>someone to sail boats with.',1000,u/1.2)}`},
+ {a:214,b:232,lines:['She folded it back, following Grandpa\'s old lines.','Fold. Fold. Flip. Pull.','A perfect boat.','She ran to the kitchen.'],lead:.6,draw:(u,t)=>{
+   if(u<12)return `<div class="abs" style="inset:0;background:#9C6B45"></div><div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,235,180,.55),transparent 60%)"></div>
+     <div class="abs" style="left:760px;top:${300-(u>9?Math.sin((u-9)*4)*12:0)}px">${paper(clamp((u-1)/7),400,Math.sin(u*7)*(u<8?10:0),'#F5EBCF')}</div>
+     ${u>8.5?`<div class="abs" style="left:300px;top:250px">${girl({mood:'big',w:300})}</div>`:''}`;
+   const r=u-12;return `<div class="abs" style="inset:0;background:#D9C7A8"></div>
+     ${[0,1,2,3].map(i=>`<div class="abs" style="left:${((i*520-r*500)%2080+2080)%2080-260}px;top:180px;width:200px;height:300px;background:#B79A72;border:8px solid #000"></div>`).join('')}
+     <div class="abs" style="left:0;right:0;top:880px;height:200px;background:#9C6B45;border-top:8px solid #000"></div>
+     <div class="abs" style="left:${200+r*180}px;top:${430-Math.abs(Math.sin(r*7))*30}px">${girl({mood:'big',w:280,arm:'up'})}</div>
+     <div class="abs" style="left:${195+r*180}px;top:${360-Math.abs(Math.sin(r*7))*30}px">${paper(1,90,0,'#F5EBCF')}</div>`}},
+ {a:232,b:250,lines:['Grandpa looked at the boat like he had never seen one before.','So Mira took a new piece of paper, put it in his hands,','and placed her hands on top of his.'],lead:.6,draw:(u,t)=>`
+   ${kitchen(t,.3)}
+   <div class="abs" style="left:900px;top:330px">${grandpa({mood:'blank',w:400})}</div>
+   <div class="abs" style="left:${u<8?560:620}px;top:450px">${girl({mood:u<8?'smile':'focus',w:290,arm:'front',look:1})}</div>
+   <div class="abs" style="left:${u<8?700:1010}px;top:${u<8?560:760}px">${paper(u<8?1:0,u<8?110:160,0,u<8?'#F5EBCF':'#fff')}</div>`},
+ {a:250,b:272,lines:['"Fold," she whispered. "Fold. Flip…"','And then something happened.','Grandpa\'s fingers began to move on their own. Faster. Surer.','He made the last fold all by himself.','He looked up and smiled. "Mira," he said. "You write the wish."'],lead:.6,draw:(u,t)=>{
+   if(u<13){const k=clamp(u/12);return `<div class="abs" style="inset:0;background:#9C6B45"></div><div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,rgba(255,235,180,.5),transparent 60%)"></div>
+     <div class="abs" style="left:760px;top:280px">${paper(k,400,Math.sin(u*(4+u))*8)}</div>
+     <div class="abs" style="left:${470+Math.sin(u*(3+u*.6))*14}px;top:640px;width:300px;height:170px;background:#C98F65;border:8px solid #000;border-radius:80px;transform:rotate(18deg)"></div>
+     <div class="abs" style="left:${1150-Math.sin(u*(3+u*.6))*14}px;top:640px;width:300px;height:170px;background:#C98F65;border:8px solid #000;border-radius:80px;transform:rotate(-18deg)"></div>
+     ${u<7?`<div class="abs" style="left:560px;top:620px;width:170px;height:100px;background:#A86B45;border:7px solid #000;border-radius:50px;transform:rotate(18deg)"></div>
+     <div class="abs" style="left:1190px;top:620px;width:170px;height:100px;background:#A86B45;border:7px solid #000;border-radius:50px;transform:rotate(-18deg)"></div>`:''}`}
+   return `${kitchen(t,.3)}
+     <div class="abs" style="left:900px;top:330px">${grandpa({mood:'smile',w:400})}</div>
+     <div class="abs" style="left:620px;top:450px">${girl({mood:'big',w:290,look:1})}</div>
+     <div class="abs" style="left:1010px;top:740px">${paper(1,160)}</div>`}},
+ {a:272,b:288,lines:['They made it just in time.','The last stream of rainwater carried both boats down the street, side by side.','Mira never told anyone what she wrote inside.'],lead:.6,draw:(u,t)=>`
+   ${street(t,lerp(.35,.05,u/16),clamp((u-6)/8))}
+   ${boatAt(200+u*55,760,150,t,-3)}${boatAt(80+u*55,790,130,t,4)}
+   <div class="abs" style="left:1250px;top:300px">${grandpa({mood:'smile',w:330})}</div>
+   <div class="abs" style="left:1050px;top:400px">${girl({mood:'smile',w:230,look:-1})}</div>`},
+ {a:288,b:300,lines:['Grandpa didn\'t remember everything after that.','But every time it rained… his hands did.'],lead:.4,draw:(u,t)=>{
+   if(u<4)return `<div class="abs" style="inset:0;background:#5B8FC2"></div>${note('I wish Grandpa<br>remembers today.',900,u/1)}`;
+   return `${street(t+288,0,1)}${boatAt(1000+u*25,770,150,t+288,-3)}${boatAt(880+u*25,800,130,t+288,4)}
+     <div class="abs" style="inset:0;background:rgba(0,0,0,${clamp((u-7)/2)*.75})"></div>
+     ${u>7?`<div class="abs" style="left:0;right:0;top:330px;text-align:center;font:900 140px Inter;color:#fff;opacity:${clamp((u-7)/1.5)}">The Paper Boat</div>
+     <div class="abs" style="left:0;right:0;top:520px;text-align:center;font:700 54px Inter;color:#FFE58A;opacity:${clamp((u-8.5)/1.5)}">Call someone you love today. 💛</div>`:''}`}},
+];
+window.DUR=300;
+function caption(s,u){const d=s.b-s.a,st=s.lead||.5,en=d-.6;if(u<st||u>en)return '';
+  const wc=s.lines.map(l=>l.split(' ').length),tot=wc.reduce((a,b)=>a+b,0);let acc=st;
+  for(let i=0;i<s.lines.length;i++){const len=wc[i]/tot*(en-st);if(u<acc+len)return s.lines[i];acc+=len}return ''}
+const c=document.getElementById('c');
+window.render=(t,showCap=true)=>{const s=SC.find(s=>t>=s.a&&t<s.b)||SC[SC.length-1];const u=t-s.a;
+  const fade=Math.min(clamp(u/0.5),clamp((s.b-t)/0.5));
+  c.innerHTML=`<div class="abs" style="inset:0;opacity:${s.a===0?1:fade}">${s.draw(u,t)}</div>`+(showCap?`<div class="cap">${caption(s,u)}</div>`:'');};
+// ===== thumbnails =====
+window.thumb=n=>{const t=5;
+  if(n===1){render(0,false);c.innerHTML=kitchen(t,1)+`<div class="abs" style="left:980px;top:260px">${grandpa({mood:'blank',w:520})}</div>
+    <div class="abs" style="left:560px;top:420px">${girl({mood:'sad',w:380,arm:'front',look:1})}</div><div class="abs" style="left:900px;top:700px">${paper(0.15,230,-8)}</div>
+    <div class="t" style="left:60px;top:60px;font-size:190px;transform:rotate(-3deg)">HE FORGOT…</div>`}
+  if(n===2){c.innerHTML=street(t,.4)+`<div class="abs" style="left:560px;top:560px;transform:rotate(-6deg)">${paper(1,380)}</div>
+    <div class="abs" style="left:1080px;top:380px;width:640px;padding:40px;background:#FBF4E2;border:10px solid #000;transform:rotate(4deg)"><div class="hand" style="font-size:78px;text-align:center">I wish…</div></div>
+    <div class="t" style="left:60px;top:60px;font-size:170px;transform:rotate(-3deg)">READ THE<br><span style="color:#fff">WISH</span></div>`}
+  if(n===3){c.innerHTML=`<div class="abs" style="inset:0;background:#2E2A4F"></div><div class="abs" style="inset:0;background:radial-gradient(circle at 62% 62%,rgba(255,220,130,.75),transparent 55%)"></div>
+    <div class="abs" style="left:860px;top:620px;width:620px;height:330px;background:#3E6FB0;border:12px solid #000;border-radius:30px">${[...Array(10)].map((_,i)=>`<div class="abs" style="left:${10+(i%5)*120}px;top:${-90+Math.floor(i/5)*70}px">${paper(1,120,(i-5)*7,'#F5EBCF')}</div>`).join('')}</div>
+    <div class="abs" style="left:300px;top:330px">${girl({mood:'wow',w:420,look:1})}</div>
+    <div class="t" style="left:60px;top:50px;font-size:150px;transform:rotate(-3deg)">60 YEARS<br><span style="color:#fff">OF BOATS</span></div>`}};
+render(0);
+</script></body></html>
