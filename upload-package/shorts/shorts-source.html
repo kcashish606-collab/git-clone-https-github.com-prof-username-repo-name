@@ -1,0 +1,183 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#000}
+#c{width:1080px;height:1920px;position:relative;overflow:hidden;font-family:'Inter',sans-serif}
+.t{position:absolute;left:0;right:0;text-align:center;font-weight:900;line-height:.95;color:#FFE14D;-webkit-text-stroke:16px #000;paint-order:stroke fill;text-transform:uppercase;letter-spacing:-2px}
+.cap{position:absolute;left:70px;right:70px;top:1340px;text-align:center;font:900 70px/1.12 Inter;color:#fff;-webkit-text-stroke:14px #000;paint-order:stroke fill}
+.cap b{color:#FFE14D}
+.abs{position:absolute}
+</style></head><body><div id="c"></div><script>
+function eye(cx, cy, r, mood){
+  let s = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${mood==='happy'?'#fff':'#FFF4F0'}" stroke="#000" stroke-width="8"/>`;
+  if (mood !== 'happy'){
+    // blood vessels
+    const veins = [[-1,-.2],[-.9,.5],[1,.1],[.85,-.6],[-.4,.95],[.5,.9],[-.6,-.85]];
+    veins.forEach(([dx,dy],i)=>{
+      const x1=cx+dx*r*.95, y1=cy+dy*r*.95, mx=cx+dx*r*.6+(i%2?8:-8), my=cy+dy*r*.6, x2=cx+dx*r*.38, y2=cy+dy*r*.38;
+      s += `<path d="M${x1} ${y1} Q${mx} ${my} ${x2} ${y2}" stroke="#E0202A" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      s += `<path d="M${mx} ${my} l${dy*18} ${-dx*18}" stroke="#E0202A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    });
+  }
+  if (mood === 'spiral'){
+    let d = `M${cx} ${cy}`;
+    for (let a=0; a<6*Math.PI; a+=0.2){ const rr = a/(6*Math.PI)*r*.72; d += ` L${cx+Math.cos(a)*rr} ${cy+Math.sin(a)*rr}`; }
+    s += `<path d="${d}" stroke="#000" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+  } else if (mood === 'happy'){
+    s += `<circle cx="${cx+6}" cy="${cy+4}" r="${r*.42}" fill="#2B1B10"/><circle cx="${cx+16}" cy="${cy-8}" r="${r*.14}" fill="#fff"/>`;
+  } else {
+    // tiny shrunken pupil = shock
+    s += `<circle cx="${cx}" cy="${cy}" r="${r*.16}" fill="#111"/>`;
+  }
+  return s;
+}
+function face(mood, opts={}){
+  const skin = mood==='happy' ? '#FFD2A6' : '#F2C7A0';
+  let s = `<svg viewBox="0 0 600 640" width="${opts.w||600}" height="${(opts.w||600)*640/600}" xmlns="http://www.w3.org/2000/svg">`;
+  // neck + shirt
+  s += `<path d="M190 560 Q300 520 410 560 L470 640 L130 640 Z" fill="${mood==='happy'?'#3BA7FF':'#5B4E8C'}" stroke="#000" stroke-width="8"/>`;
+  s += `<rect x="255" y="470" width="90" height="90" fill="${skin}" stroke="#000" stroke-width="8"/>`;
+  // ears
+  s += `<ellipse cx="88" cy="320" rx="40" ry="58" fill="${skin}" stroke="#000" stroke-width="8"/><ellipse cx="512" cy="320" rx="40" ry="58" fill="${skin}" stroke="#000" stroke-width="8"/>`;
+  // head
+  s += `<ellipse cx="300" cy="300" rx="215" ry="235" fill="${skin}" stroke="#000" stroke-width="9"/>`;
+  // hair
+  if (mood==='happy'){
+    s += `<path d="M92 250 Q110 70 300 62 Q490 70 508 250 Q450 150 300 150 Q160 150 92 250Z" fill="#4A2C17" stroke="#000" stroke-width="8"/>`;
+  } else {
+    s += `<path d="M86 260 L70 170 L130 190 L120 90 L190 140 L210 40 L265 120 L310 20 L345 115 L410 45 L420 140 L495 95 L475 185 L535 175 L512 262 Q450 160 300 158 Q160 160 86 260Z" fill="#4A2C17" stroke="#000" stroke-width="8" stroke-linejoin="round"/>`;
+  }
+  // eye bags
+  if (mood!=='happy'){
+    s += `<path d="M110 360 Q200 440 285 360" stroke="#7A4E8C" stroke-width="14" fill="none" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M315 360 Q400 440 490 360" stroke="#7A4E8C" stroke-width="14" fill="none" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M125 392 Q200 450 270 392" stroke="#9B6AA8" stroke-width="8" fill="none" stroke-linecap="round" opacity=".6"/>`;
+    s += `<path d="M330 392 Q400 450 475 392" stroke="#9B6AA8" stroke-width="8" fill="none" stroke-linecap="round" opacity=".6"/>`;
+  }
+  // eyes
+  const er = mood==='happy' ? 58 : 92;
+  s += eye(198, 300, er, mood) + eye(402, 300, er, mood);
+  // brows
+  if (mood==='happy'){
+    s += `<path d="M150 215 Q198 190 246 215" stroke="#000" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M354 215 Q402 190 450 215" stroke="#000" stroke-width="12" fill="none" stroke-linecap="round"/>`;
+  } else {
+    s += `<path d="M110 190 L260 215" stroke="#000" stroke-width="13" stroke-linecap="round"/><path d="M490 190 L340 215" stroke="#000" stroke-width="13" stroke-linecap="round"/>`;
+  }
+  // mouth
+  if (mood==='happy'){
+    s += `<path d="M215 430 Q300 510 385 430 Z" fill="#7A1F1F" stroke="#000" stroke-width="8" stroke-linejoin="round"/><path d="M240 448 Q300 470 360 448" fill="#fff"/>`;
+  } else {
+    s += `<path d="M200 470 Q225 445 250 470 T300 470 T350 470 T400 470" stroke="#000" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M262 478 Q268 510 258 520" stroke="#6FC3FF" stroke-width="9" fill="none" stroke-linecap="round"/>`; // drool
+  }
+  // sweat drop
+  if (mood!=='happy') s += `<path d="M520 200 Q545 245 520 262 Q495 245 520 200Z" fill="#6FC3FF" stroke="#000" stroke-width="5"/>`;
+  s += `</svg>`;
+  return s;
+}
+function mug(x,y,sc=1){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px" width="${200*sc}" height="${230*sc}" viewBox="0 0 200 230">
+   <path d="M60 40 Q50 15 65 0 M100 40 Q90 15 105 0 M140 40 Q130 15 145 0" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/>
+   <path d="M150 90 Q195 95 190 135 Q185 175 145 170" stroke="#000" stroke-width="24" fill="none"/>
+   <path d="M150 90 Q195 95 190 135 Q185 175 145 170" stroke="#fff" stroke-width="10" fill="none"/>
+   <path d="M30 55 L170 55 L158 215 Q100 230 42 215 Z" fill="#fff" stroke="#000" stroke-width="9" stroke-linejoin="round"/>
+   <text x="100" y="160" text-anchor="middle" font-family="Inter" font-weight="900" font-size="58" fill="#E8202A">x12</text></svg>`;
+}
+function clock(x,y,size,label){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px" width="${size}" height="${size}" viewBox="0 0 200 200">
+   <circle cx="100" cy="100" r="88" fill="#fff" stroke="#000" stroke-width="12"/>
+   ${[...Array(12)].map((_,i)=>{const a=i*Math.PI/6;return `<line x1="${100+Math.cos(a)*70}" y1="${100+Math.sin(a)*70}" x2="${100+Math.cos(a)*80}" y2="${100+Math.sin(a)*80}" stroke="#000" stroke-width="6"/>`}).join('')}
+   <line x1="100" y1="100" x2="100" y2="38" stroke="#000" stroke-width="10" stroke-linecap="round"/>
+   <line x1="100" y1="100" x2="148" y2="122" stroke="#E8202A" stroke-width="8" stroke-linecap="round"/>
+   <circle cx="100" cy="100" r="9" fill="#000"/></svg>`;
+}
+function arrow(x,y,rot,len=230){
+  return `<svg style="position:absolute;left:${x}px;top:${y}px;transform:rotate(${rot}deg);transform-origin:0 50%" width="${len+40}" height="120" viewBox="0 0 ${len+40} 120">
+   <path d="M0 60 L${len-50} 60" stroke="#000" stroke-width="40" stroke-linecap="round"/>
+   <path d="M${len-80} 10 L${len+20} 60 L${len-80} 110 Z" fill="#000" stroke="#000" stroke-width="14" stroke-linejoin="round"/>
+   <path d="M0 60 L${len-50} 60" stroke="#E8202A" stroke-width="24" stroke-linecap="round"/>
+   <path d="M${len-70} 26 L${len} 60 L${len-70} 94 Z" fill="#E8202A"/></svg>`;
+}
+
+const W=1080,H=1920;
+const ease=x=>1-Math.pow(1-Math.min(1,Math.max(0,x)),3);
+const pop=u=>{const k=Math.min(1,u/0.35);return 0.6+0.4*ease(k)+0.08*Math.sin(Math.min(1,k)*Math.PI)};
+function helmetFace(){
+  const h=`<path d="M45 345 C45 0 555 0 555 345 L515 365 L495 300 C480 170 120 170 105 300 L85 365 Z" fill="#1E5AA8" stroke="#000" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M300 18 L300 175" stroke="#fff" stroke-width="30"/><path d="M300 18 L300 175" stroke="#E8202A" stroke-width="12"/>
+  <circle cx="92" cy="330" r="22" fill="#0E2E5C" stroke="#000" stroke-width="6"/>
+  <g stroke="#000" stroke-width="22" stroke-linecap="round"><path d="M120 420 L480 420 M150 500 L450 500 M230 400 L230 530 M370 400 L370 530"/></g>
+  <g stroke="#C9CED6" stroke-width="12" stroke-linecap="round"><path d="M120 420 L480 420 M150 500 L450 500 M230 400 L230 530 M370 400 L370 530"/></g>`;
+  return face('wrecked',{w:780}).replace(/<\/svg>$/,h+'</svg>');
+}
+function pizza(){return `<svg width="520" height="520" viewBox="0 0 520 520"><path d="M60 80 Q260 10 460 80 L260 500 Z" fill="#FFC94A" stroke="#000" stroke-width="12" stroke-linejoin="round"/>
+ <path d="M60 80 Q260 10 460 80 L440 120 Q260 60 80 120 Z" fill="#D9892B" stroke="#000" stroke-width="10" stroke-linejoin="round"/>
+ ${[[200,170],[320,180],[260,280],[230,380],[330,300]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="34" fill="#D63A2A" stroke="#000" stroke-width="7"/>`).join('')}</svg>`}
+function beer(){return `<svg width="300" height="380" viewBox="0 0 300 380"><path d="M210 120 Q290 120 285 200 Q280 280 210 275" stroke="#000" stroke-width="34" fill="none"/><path d="M210 120 Q290 120 285 200 Q280 280 210 275" stroke="#fff" stroke-width="16" fill="none"/>
+ <rect x="30" y="80" width="190" height="280" rx="20" fill="#FFB627" stroke="#000" stroke-width="12"/>
+ <path d="M20 90 Q40 20 90 50 Q120 10 160 45 Q210 20 230 90 Z" fill="#fff" stroke="#000" stroke-width="12" stroke-linejoin="round"/></svg>`}
+function capAt(lines,u,dur){ // lines: array of chunks; distribute by word count
+  const wc=lines.map(l=>l.split(' ').length),tot=wc.reduce((a,b)=>a+b,0);let acc=0;
+  for(let i=0;i<lines.length;i++){acc+=wc[i]/tot*dur;if(u<acc)return lines[i]}return lines[lines.length-1];}
+const hl=s=>s.replace(/\*(.+?)\*/g,'<b>$1</b>');
+
+const SH={
+ 1:{dur:35,segs:[
+  {a:0,b:3,cap:['A 17-year-old stayed awake','for *11 days* straight.'],draw:(u)=>`
+     <div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,#4B2A8A,#0A0A22 75%)"></div>
+     <div class="abs" style="left:${540-390}px;top:580px;transform:scale(${1+u*0.12});transform-origin:50% 40%">${face('wrecked',{w:780})}</div>
+     <div class="t" style="top:150px;font-size:150px;transform:scale(${pop(u)})">DAY 4<br><span style="color:#fff">WITHOUT SLEEP</span></div>`},
+  {a:3,b:12,cap:['By *day 3* he was seeing things:','shadows moving…','street signs that','looked like *people*.'],draw:(u)=>{
+     const day=Math.min(4,1+Math.floor(u/2.25)), fl=(u%2.25)<0.25?Math.abs(Math.cos((u%2.25)/0.25*Math.PI)):1;
+     const shadows=[0,1,2].map(i=>{const x=((u*90+i*400)%1400)-200,y=250+i*330;return `<svg class="abs" style="left:${x}px;top:${y}px;opacity:.55" width="220" height="300" viewBox="0 0 220 300"><path d="M110 10 Q190 10 200 110 L215 300 L5 300 L20 110 Q30 10 110 10Z" fill="#000"/><ellipse cx="80" cy="100" rx="16" ry="9" fill="#FF3B3B"/><ellipse cx="140" cy="100" rx="16" ry="9" fill="#FF3B3B"/></svg>`}).join('');
+     return `<div class="abs" style="inset:0;background:radial-gradient(circle at 50% 40%,#1E6B5A,#05141A 75%)"></div>${shadows}
+     <div class="abs" style="left:290px;top:230px;width:500px;height:560px;background:#fff;border:14px solid #000;border-radius:40px;transform:scaleY(${fl});overflow:hidden">
+       <div style="height:150px;background:#E8202A;border-bottom:12px solid #000;font:900 100px/150px Inter;color:#fff;text-align:center">DAY</div>
+       <div style="font:900 330px/400px Inter;text-align:center;color:#111">${day}</div></div>
+     <div class="abs" style="left:330px;top:820px;transform:rotate(${Math.sin(u*3)*4}deg)">${face('wrecked',{w:420})}</div>`}},
+  {a:12,b:25,cap:['And on *day 4?*','He became convinced','he was a *professional*','*football player.*','He wasn\'t joking.','He *believed* it.'],draw:(u)=>{
+     const crowd=[...Array(70)].map((_,i)=>`<div class="abs" style="left:${(i*137)%1080}px;top:${60+((i*53)%300)+Math.sin(u*8+i)*10}px;width:46px;height:46px;border-radius:50%;background:hsl(${(i*47)%360},70%,60%);border:5px solid #000"></div>`).join('');
+     const flash=(Math.floor(u*6)%5===0)?'opacity:.9':'opacity:0';
+     return `<div class="abs" style="inset:0;background:linear-gradient(#0B1E3D 0 22%,#2E8B3A 22%)"></div>${crowd}
+     <div class="abs" style="left:0;right:0;top:0;height:420px;background:#fff;${flash}"></div>
+     <div class="abs" style="left:0;right:0;top:860px;height:14px;background:#fff"></div>
+     <div class="abs" style="left:150px;top:${420-Math.abs(Math.sin(u*4))*40}px">${helmetFace()}</div>
+     <div class="t" style="top:1120px;font-size:130px;transform:rotate(-4deg) scale(${pop(u)})">"I'M A PRO!"</div>`}},
+  {a:25,b:35,cap:['So how long did he sleep','when it was all over?','The answer\'s in','the *full video.*'],draw:(u)=>{
+     const z=[0,1,2].map(i=>{const k=((u*0.6+i/3)%1);return `<div class="abs" style="left:${700+k*150+i*20}px;top:${700-k*450}px;font:900 ${70+k*80}px Inter;color:#fff;-webkit-text-stroke:10px #000;paint-order:stroke fill;opacity:${1-k}">Z</div>`}).join('');
+     const fall=ease(u/0.8);
+     return `<div class="abs" style="inset:0;background:radial-gradient(circle at 50% 40%,#2A3B7A,#0A0F2A 75%)"></div>
+     <div class="abs" style="left:880px;top:140px;width:120px;height:120px;border-radius:50%;background:#FFF3B0;box-shadow:-30px 0 0 0 #2A3B7A inset"></div>
+     <div class="abs" style="left:60px;top:860px;width:960px;height:120px;background:#8A5A3B;border:12px solid #000;border-radius:20px"></div>
+     <div class="abs" style="left:90px;top:740px;width:320px;height:150px;background:#fff;border:12px solid #000;border-radius:70px"></div>
+     <div class="abs" style="left:${120}px;top:${380+fall*120}px;transform:rotate(${-90*fall}deg);transform-origin:50% 60%">${face('wrecked',{w:420})}</div>
+     <div class="abs" style="left:330px;top:770px;width:690px;height:160px;background:#3BA7FF;border:12px solid #000;border-radius:30px 30px 10px 10px"></div>
+     ${z}
+     ${u>5?`<div class="t" style="top:1080px;font-size:130px;transform:scale(${1+0.06*Math.sin(u*6)})">FULL VIDEO ↓</div>`:''}`}},
+ ]},
+ 2:{dur:25,segs:[
+  {a:0,b:3,cap:['Pulled an all-nighter?','Your brain might be *"drunk"*','right now.'],draw:(u)=>`
+     <div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,#7A2E8C,#1A0A2A 75%)"></div>
+     <div class="abs" style="left:100px;right:100px;top:1180px;height:18px;background:#fff;border:6px solid #000"></div>
+     <div class="abs" style="left:${150+Math.sin(u*5)*60}px;top:430px;transform:rotate(${Math.sin(u*4)*14}deg);transform-origin:50% 100%">${face('wrecked',{w:780})}</div>
+     <div class="t" style="top:150px;font-size:150px;transform:scale(${pop(u)})">24 HRS<br>AWAKE = ?</div>`},
+  {a:3,b:15,cap:['Staying awake about *24 hours*','impairs you about as much as','a blood alcohol level of *0.10%*.','That\'s over the','*legal driving limit.*'],draw:(u)=>`
+     <div class="abs" style="inset:0;background:radial-gradient(circle at 50% 40%,#C2410C,#3A0E05 75%)"></div>
+     <div class="abs" style="left:130px;top:${350+Math.sin(u*2)*15}px">${clock(0,0,330)}</div>
+     <div class="t" style="top:400px;left:470px;right:auto;font-size:230px;color:#fff">=</div>
+     <div class="abs" style="left:640px;top:${330+Math.sin(u*2+1)*15}px">${beer()}</div>
+     <div class="t" style="top:830px;font-size:${u<0.4?150*pop(u/0.4*0.35):190}px">≈ 0.10%<br><span style="color:#fff;font-size:120px">BAC</span></div>
+     ${u>8?`<div class="abs" style="left:300px;top:150px;width:480px;padding:20px;background:#E8202A;border:10px solid #000;border-radius:24px;font:900 70px Inter;color:#fff;text-align:center;transform:rotate(-3deg) scale(${pop(u-8)})">DON'T DRIVE!</div>`:''}`},
+  {a:15,b:25,cap:['That\'s also why *4 a.m. pizza*','suddenly sounds like a great idea.','Want to see what happens','after *11 days?*','Full video linked.'],draw:(u)=>{
+     const hearts=[0,1,2,3].map(i=>{const k=((u*0.5+i/4)%1);return `<div class="abs" style="left:${150+i*220}px;top:${900-k*700}px;font-size:${90}px;opacity:${1-k}">❤️</div>`}).join('');
+     return `<div class="abs" style="inset:0;background:radial-gradient(circle at 50% 45%,#FFB627,#C2410C 80%)"></div>${hearts}
+     <div class="abs" style="left:150px;top:300px">${face('happy',{w:780})}</div>
+     <div class="abs" style="left:280px;top:${740+Math.sin(u*5)*12}px;transform:rotate(${-8+Math.sin(u*3)*5}deg)">${pizza()}</div>
+     <div class="t" style="top:120px;font-size:130px;transform:rotate(-3deg) scale(${pop(u)})">4 A.M. 🍕</div>
+     ${u>6?`<div class="t" style="top:1660px;font-size:110px;transform:scale(${1+0.06*Math.sin(u*6)})">FULL VIDEO ↓</div>`:''}`}},
+ ]}};
+const S=SH[new URLSearchParams(location.search).get('s')||1];
+window.DUR=S.dur;
+const c=document.getElementById('c');
+window.render=t=>{const s=S.segs.find(s=>t>=s.a&&t<s.b)||S.segs[S.segs.length-1];const u=t-s.a;
+  c.innerHTML=s.draw(u)+`<div class="cap">${hl(capAt(s.cap,u,s.b-s.a))}</div>`;};
+render(0);
+</script></body></html>
