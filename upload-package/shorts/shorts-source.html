@@ -126,7 +126,7 @@ const SH={
      <div class="abs" style="left:${540-390}px;top:580px;transform:scale(${1+u*0.12});transform-origin:50% 40%">${face('wrecked',{w:780})}</div>
      <div class="t" style="top:150px;font-size:150px;transform:scale(${pop(u)})">DAY 4<br><span style="color:#fff">WITHOUT SLEEP</span></div>`},
   {a:3,b:12,cap:['By *day 3* he was seeing things:','shadows moving…','street signs that','looked like *people*.'],draw:(u)=>{
-     const day=Math.min(4,1+Math.floor(u/2.25)), fl=(u%2.25)<0.25?Math.abs(Math.cos((u%2.25)/0.25*Math.PI)):1;
+     const st=window.__d/4, day=Math.min(4,1+Math.floor(u/st)), fl=(u%st)<0.25?Math.abs(Math.cos((u%st)/0.25*Math.PI)):1;
      const shadows=[0,1,2].map(i=>{const x=((u*90+i*400)%1400)-200,y=250+i*330;return `<svg class="abs" style="left:${x}px;top:${y}px;opacity:.55" width="220" height="300" viewBox="0 0 220 300"><path d="M110 10 Q190 10 200 110 L215 300 L5 300 L20 110 Q30 10 110 10Z" fill="#000"/><ellipse cx="80" cy="100" rx="16" ry="9" fill="#FF3B3B"/><ellipse cx="140" cy="100" rx="16" ry="9" fill="#FF3B3B"/></svg>`}).join('');
      return `<div class="abs" style="inset:0;background:radial-gradient(circle at 50% 40%,#1E6B5A,#05141A 75%)"></div>${shadows}
      <div class="abs" style="left:290px;top:230px;width:500px;height:560px;background:#fff;border:14px solid #000;border-radius:40px;transform:scaleY(${fl});overflow:hidden">
@@ -175,9 +175,11 @@ const SH={
      ${u>6?`<div class="t" style="top:1660px;font-size:110px;transform:scale(${1+0.06*Math.sin(u*6)})">FULL VIDEO ↓</div>`:''}`}},
  ]}};
 const S=SH[new URLSearchParams(location.search).get('s')||1];
+const qd=new URLSearchParams(location.search).get('d');
+if(qd){let a=0;qd.split(',').map(Number).forEach((d,i)=>{S.segs[i].a=a;S.segs[i].b=a+d;a+=d});S.dur=a;}
 window.DUR=S.dur;
 const c=document.getElementById('c');
-window.render=t=>{const s=S.segs.find(s=>t>=s.a&&t<s.b)||S.segs[S.segs.length-1];const u=t-s.a;
+window.render=t=>{const s=S.segs.find(s=>t>=s.a&&t<s.b)||S.segs[S.segs.length-1];const u=t-s.a;window.__d=s.b-s.a;
   c.innerHTML=s.draw(u)+`<div class="cap">${hl(capAt(s.cap,u,s.b-s.a))}</div>`;};
 render(0);
 </script></body></html>
