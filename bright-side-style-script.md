@@ -47,7 +47,7 @@
 **Title:** What Happens to Your Body If You Stay Awake for 11 Days
 **Alt titles:** "I Didn't Sleep for 264 Hours — Here's What Happened" / "Your Body Without Sleep: Hour by Hour"
 **Thumbnail:** cartoon character with huge red eyes and a coffee IV drip. Text: **"DAY 11?!"**
-**Length:** about 9–10 min (about 1,450 words)
+**Length:** about 8 min (about 1,020 narrated words at about 140 wpm with transitions). The section timestamps below are rough. See `upload-package/metadata.md` for recalculated chapters.
 
 ---
 
