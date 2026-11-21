@@ -1,0 +1,13 @@
+[project]
+name = "steamrec"
+version = "1.0.0"
+description = "Thermodynamic and economic model for industrial waste steam recovery (heating + condensate)"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]
+
+[tool.ruff]
+line-length = 120

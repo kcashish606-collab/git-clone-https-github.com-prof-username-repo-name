@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Waste Steam Recovery · Thermal Design Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23ff7a45'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%2338bdf8'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Waste Steam Recovery</h1>
+      <p class="tagline">Combined space heating + condensate recovery for 3.8 psia industrial waste steam</p>
+    </div>
+    <span id="status" class="pill">Connecting…</span>
+  </header>
+
+  <main class="layout">
+    <!-- ============ Inputs ============ -->
+    <aside class="panel inputs">
+      <form id="inputs-form" autocomplete="off">
+        <fieldset>
+          <legend>Waste steam</legend>
+          <label>Mass flow <span>lbm/h</span><input name="steam_flow_lbm_h" type="number" step="100" /></label>
+          <label>Pressure <span>psia</span><input name="steam_pressure_psia" type="number" step="0.1" /></label>
+          <label>Temperature <span>°F</span><input name="steam_temp_F" type="number" step="1" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Heating system</legend>
+          <label>Building load <span>MW</span>
+            <input name="building_load_MW" type="range" min="0" max="20" step="0.25" />
+            <output data-for="building_load_MW"></output>
+          </label>
+          <label>Recovery efficiency <span>–</span>
+            <input name="recovery_efficiency" type="range" min="0.5" max="1" step="0.01" />
+            <output data-for="recovery_efficiency"></output>
+          </label>
+          <label>HW return <span>°F</span><input name="hw_return_F" type="number" step="1" /></label>
+          <label>HW supply <span>°F</span><input name="hw_supply_F" type="number" step="1" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Condenser &amp; pumps</legend>
+          <label>CW in <span>°F</span><input name="cw_in_F" type="number" step="1" /></label>
+          <label>CW out <span>°F</span><input name="cw_out_F" type="number" step="1" /></label>
+          <label>Pump outlet <span>psia</span><input name="pump_outlet_psia" type="number" step="1" /></label>
+          <label>Vacuum pump <span>kW</span><input name="vacuum_pump_kW" type="number" step="1" /></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Economics</legend>
+          <label>Operating hours <span>h/yr</span><input name="operating_hours" type="number" step="100" /></label>
+          <label>Heating hours <span>h/yr</span><input name="heating_hours" type="number" step="100" /></label>
+          <label>Electricity <span>$/kWh</span><input name="electricity_price" type="number" step="0.01" /></label>
+          <label>Heat value <span>$/kWh</span><input name="heat_price" type="number" step="0.01" /></label>
+          <label>Water <span>$/100 gal</span><input name="water_price_per_100gal" type="number" step="0.05" /></label>
+        </fieldset>
+
+        <button type="button" id="reset-btn" class="ghost">Reset to project defaults</button>
+      </form>
+    </aside>
+
+    <!-- ============ Results ============ -->
+    <section class="results">
+      <div id="warnings"></div>
+
+      <div class="kpis">
+        <div class="kpi steam"><div class="kv" id="k-cond">–</div><div class="kl">Condensing heat available</div></div>
+        <div class="kpi violet"><div class="kv" id="k-exergy">–</div><div class="kl">Stream exergy</div></div>
+        <div class="kpi hot"><div class="kv" id="k-heat">–</div><div class="kl">Useful heat to building</div></div>
+        <div class="kpi cold"><div class="kv" id="k-water">–</div><div class="kl">Condensate recovered</div></div>
+        <div class="kpi green wide"><div class="kv" id="k-net">–</div><div class="kl">Net annual benefit</div></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Annual benefit breakdown</h2>
+          <canvas id="econ-chart" height="220"></canvas>
+        </div>
+        <div class="panel">
+          <h2>Exergy flow (heating mode)</h2>
+          <canvas id="exergy-chart" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Sensitivity: net benefit vs building load</h2>
+        <canvas id="sens-chart" height="110"></canvas>
+      </div>
+
+      <div class="panel">
+        <h2>Process schematic</h2>
+        <div class="schematic">
+          <svg viewBox="0 0 900 300" role="img" aria-label="Process schematic">
+            <defs>
+              <marker id="ar" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="currentColor"/></marker>
+            </defs>
+            <g class="flow steam"><path d="M20 80 H160" marker-end="url(#ar)"/><path d="M200 80 V40 H380" marker-end="url(#ar)"/><path d="M200 80 V200 H380" marker-end="url(#ar)"/></g>
+            <g class="flow hot"><path d="M500 30 H640" marker-end="url(#ar)"/><path d="M640 70 H500" marker-end="url(#ar)"/></g>
+            <g class="flow cold"><path d="M500 190 H640" marker-end="url(#ar)"/><path d="M640 230 H500" marker-end="url(#ar)"/></g>
+            <g class="flow cond"><path d="M440 100 V168" marker-end="url(#ar)"/><path d="M440 250 V270 H706" marker-end="url(#ar)"/><path d="M752 270 H880" marker-end="url(#ar)"/></g>
+            <g class="flow vacline"><path d="M380 235 H305 V250"/></g>
+            <rect class="eq" x="380" y="15" width="120" height="85" rx="10"/><text x="440" y="52">HX-101</text><text class="sm" x="440" y="72">vacuum HX</text>
+            <rect class="eq" x="380" y="170" width="120" height="80" rx="10"/><text x="440" y="205">E-201</text><text class="sm" x="440" y="225">condenser</text>
+            <rect class="eq" x="640" y="10" width="110" height="80" rx="10"/><text x="695" y="55">Building</text>
+            <rect class="eq" x="640" y="175" width="110" height="70" rx="10"/><text x="695" y="215">CT-301</text>
+            <circle class="eq" cx="730" cy="270" r="22"/><text x="730" y="275" class="sm">P-401</text>
+            <circle class="eq" cx="180" cy="80" r="18"/><text x="180" y="118" class="sm">split</text>
+            <rect class="eq vac" x="250" y="250" width="110" height="40" rx="8"/><text x="305" y="275" class="sm">VP-501 vacuum</text>
+            <text class="st" x="30" y="70">① steam</text><text class="st" x="450" y="140">HX drain → hotwell</text>
+            <text class="st" x="530" y="292">② condensate (hotwell)</text>
+            <text class="st" x="770" y="258">③ return to process</text><text class="st" x="545" y="22">⑤ supply</text>
+            <text class="st" x="545" y="88">④ return</text><text class="st" x="545" y="182">⑦ CW out</text><text class="st" x="545" y="248">⑥ CW in</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>State points</h2>
+        <div class="table-wrap"><table id="states-table"></table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Equipment list</h2>
+        <div class="table-wrap"><table id="equip-table"></table></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Properties: <span id="prop-src">CoolProp</span> · Dead state 77 °F, 14.696 psia ·
+    <a href="/docs">API docs</a>
+  </footer>
+</body>
+</html>
